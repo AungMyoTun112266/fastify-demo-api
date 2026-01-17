@@ -11,7 +11,9 @@ export function buildApp() {
     logger: false,
     trustProxy: true,
   }).withTypeProvider<ZodTypeProvider>();
+
   const container = createContainer();
+
   app.register(compress, {
     global: true,
     encodings: ["gzip", "br"], // Brotli + gzip
