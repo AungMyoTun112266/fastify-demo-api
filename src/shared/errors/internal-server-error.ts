@@ -5,7 +5,9 @@ export class InternalServerError extends HttpError {
   readonly type = "https://example.com/problems/internal-server-error";
   readonly title = "Internal Server Error";
 
-  constructor(message = "Something went wrong") {
+  constructor(
+    message = "We’re unable to process your request at the moment. Please try again later."
+  ) {
     super(message);
   }
 }

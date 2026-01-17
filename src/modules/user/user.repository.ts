@@ -9,6 +9,7 @@ export class UserRepository implements Repository<User> {
   private readonly tableName = env.USERS_TABLE;
 
   async save(entity: User): Promise<User> {
+    console.log(`Saving user info: ${JSON.stringify(entity)}`);
     try {
       await dynamoDocClient.send(
         new PutCommand({
@@ -25,6 +26,7 @@ export class UserRepository implements Repository<User> {
     }
   }
   async findById(id: string): Promise<User | null> {
+    console.log(`Find the user info ${id}`);
     const result = await dynamoDocClient.send(
       new QueryCommand({
         TableName: this.tableName,
