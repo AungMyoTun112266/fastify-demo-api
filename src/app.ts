@@ -2,6 +2,8 @@ import Fastify from "fastify";
 import compress from "@fastify/compress";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import { userModule } from "./modules/user/user.module";
+import { productModule } from "./modules/product/product.module";
+import { authModule } from "./modules/auth/auth.module";
 import { createContainer } from "./container/container";
 import { errorHandler } from "./plugins/error-handler";
 import { authPlugin } from "./plugins/auth";
@@ -21,7 +23,9 @@ export function buildApp() {
   });
   errorHandler(app);
   app.register(authPlugin);
+  authModule(app, container);
   userModule(app, container);
+  productModule(app, container);
   return app;
 }
 

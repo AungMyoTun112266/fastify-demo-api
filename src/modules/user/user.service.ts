@@ -1,9 +1,10 @@
 import { ConflictError, NotFoundError } from "../../shared/errors";
-import { UserRepository } from "./user.repository";
+import { Repository } from "../../shared/types/repository";
+import { hashPassword } from "../../shared/utils/password";
 import { CreateUserInput, User } from "./user.types";
 
 export class UserService {
-  constructor(private readonly repo: UserRepository) {}
+  constructor(private readonly repo: Repository<User>) {}
 
   async create(input: CreateUserInput): Promise<User> {
     const existing = await this.repo.findById(input.id);
@@ -13,9 +14,11 @@ export class UserService {
 
     const user: User = {
       id: input.id,
+      sk: "USER",
       name: input.name,
       age: input.age,
       active: input.active,
+      password: await hashPassword(input.password),
     };
     return this.repo.save(user);
   }

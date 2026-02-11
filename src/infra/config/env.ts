@@ -7,12 +7,11 @@ const envSchema = z.object({
 
   AWS_REGION: z.string().default("ap-northeast-1"),
 
-  // USERS_TABLE: z.string().min(1, "USERS_TABLE is required"),
-  USERS_TABLE: z.string().default("test_user"),
+  USERS_TABLE: z.string().min(1, "USERS_TABLE is required"),
+  PRODUCTS_TABLE: z.string().min(1, "PRODUCTS_TABLE is required"),
+
+  COGNITO_USER_POOL_ID: z.string().min(1, "COGNITO_USER_POOL_ID is required"),
+  COGNITO_CLIENT_ID: z.string().min(1, "COGNITO_CLIENT_ID is required"),
 });
 
-export const env = envSchema.parse({
-  NODE_ENV: process.env.NODE_ENV,
-  AWS_REGION: process.env.AWS_REGION,
-  USERS_TABLE: process.env.USERS_TABLE,
-});
+export const env = envSchema.parse(process.env);

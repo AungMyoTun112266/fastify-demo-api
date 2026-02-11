@@ -13,6 +13,9 @@ export const userQuerySchema = z.object({
 export const userBodySchema = z.object({
   name: requiredString("Name"),
   age: positiveInt("Age"),
+  password: requiredString("Password").min(8, {
+    message: "Password must be at least 8 characters",
+  }),
 });
 
 export const userResponseSchema = z.object({

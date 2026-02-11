@@ -1,8 +1,10 @@
 export interface User {
   id: string;
+  sk: string;
   name: string;
   age: number;
   active: boolean;
+  password: string;
 }
 
 export interface CreateUserInput {
@@ -10,4 +12,5 @@ export interface CreateUserInput {
   name: string;
   age: number;
   active: boolean;
+  password: string;
 }
