@@ -9,3 +9,4 @@ export async function createTestApp() {
 }
 
 export const AUTH_HEADER = "Bearer valid-token";
+export const USER_AUTH_HEADER = "Bearer user-token";

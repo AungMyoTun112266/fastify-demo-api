@@ -74,4 +74,46 @@ describe("Authentication Plugin", () => {
 
     expect(response.statusCode).toBe(200);
   });
+
+  // --- Security: Token Manipulation ---
+
+  it("should return 401 when authorization header is empty string", async () => {
+    const response = await app.inject({
+      method: "GET",
+      url: "/users/user-1",
+      headers: { authorization: "" },
+    });
+
+    expect(response.statusCode).toBe(401);
+  });
+
+  it("should return 401 when Bearer token is empty", async () => {
+    const response = await app.inject({
+      method: "GET",
+      url: "/users/user-1",
+      headers: { authorization: "Bearer " },
+    });
+
+    expect(response.statusCode).toBe(401);
+  });
+
+  it("should return 401 when token contains only spaces", async () => {
+    const response = await app.inject({
+      method: "GET",
+      url: "/users/user-1",
+      headers: { authorization: "Bearer    " },
+    });
+
+    expect(response.statusCode).toBe(401);
+  });
+
+  it("should return 401 when authorization has extra segments", async () => {
+    const response = await app.inject({
+      method: "GET",
+      url: "/users/user-1",
+      headers: { authorization: "Bearer token extra-data" },
+    });
+
+    expect(response.statusCode).toBe(401);
+  });
 });

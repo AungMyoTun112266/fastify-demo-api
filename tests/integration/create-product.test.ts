@@ -1,9 +1,9 @@
-import { describe, it, expect, beforeAll, beforeEach, afterAll, vi } from "vitest";
+import { describe, it, expect, beforeAll, beforeEach, afterAll } from "vitest";
 import { FastifyInstance } from "fastify";
-import { PutCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
+import { PutCommand } from "@aws-sdk/lib-dynamodb";
 import { createTestApp, AUTH_HEADER } from "../helpers/app";
 import { dynamoMock, resetMocks } from "../helpers/setup";
-import { validProduct, validCreateProductBody } from "../helpers/fixtures";
+import { validCreateProductBody } from "../helpers/fixtures";
 
 describe("POST /products", () => {
   let app: FastifyInstance;
@@ -137,6 +137,113 @@ describe("POST /products", () => {
       url: "/products",
       headers: { authorization: AUTH_HEADER },
       payload: { ...validCreateProductBody, name: "" },
+    });
+
+    expect(response.statusCode).toBe(400);
+  });
+
+  // --- Security: Input Length Limits ---
+
+  it("should return 400 when name exceeds max length", async () => {
+    const response = await app.inject({
+      method: "POST",
+      url: "/products",
+      headers: { authorization: AUTH_HEADER },
+      payload: { ...validCreateProductBody, name: "a".repeat(201) },
+    });
+
+    expect(response.statusCode).toBe(400);
+  });
+
+  it("should return 400 when description exceeds max length", async () => {
+    const response = await app.inject({
+      method: "POST",
+      url: "/products",
+      headers: { authorization: AUTH_HEADER },
+      payload: { ...validCreateProductBody, description: "a".repeat(5001) },
+    });
+
+    expect(response.statusCode).toBe(400);
+  });
+
+  it("should return 400 when category exceeds max length", async () => {
+    const response = await app.inject({
+      method: "POST",
+      url: "/products",
+      headers: { authorization: AUTH_HEADER },
+      payload: { ...validCreateProductBody, category: "a".repeat(101) },
+    });
+
+    expect(response.statusCode).toBe(400);
+  });
+
+  // --- Security: Boundary Values ---
+
+  it("should return 400 when price is zero", async () => {
+    const response = await app.inject({
+      method: "POST",
+      url: "/products",
+      headers: { authorization: AUTH_HEADER },
+      payload: { ...validCreateProductBody, price: 0 },
+    });
+
+    expect(response.statusCode).toBe(400);
+  });
+
+  // --- Security: Whitespace Trimming ---
+
+  it("should return 400 when name is only whitespace", async () => {
+    const response = await app.inject({
+      method: "POST",
+      url: "/products",
+      headers: { authorization: AUTH_HEADER },
+      payload: { ...validCreateProductBody, name: "   " },
+    });
+
+    expect(response.statusCode).toBe(400);
+  });
+
+  it("should return 400 when description is only whitespace", async () => {
+    const response = await app.inject({
+      method: "POST",
+      url: "/products",
+      headers: { authorization: AUTH_HEADER },
+      payload: { ...validCreateProductBody, description: "   " },
+    });
+
+    expect(response.statusCode).toBe(400);
+  });
+
+  it("should return 400 when category is only whitespace", async () => {
+    const response = await app.inject({
+      method: "POST",
+      url: "/products",
+      headers: { authorization: AUTH_HEADER },
+      payload: { ...validCreateProductBody, category: "   " },
+    });
+
+    expect(response.statusCode).toBe(400);
+  });
+
+  // --- Security: Type Coercion ---
+
+  it("should return 400 when price is a string", async () => {
+    const response = await app.inject({
+      method: "POST",
+      url: "/products",
+      headers: { authorization: AUTH_HEADER },
+      payload: { ...validCreateProductBody, price: "twenty" },
+    });
+
+    expect(response.statusCode).toBe(400);
+  });
+
+  it("should return 400 when name is a number", async () => {
+    const response = await app.inject({
+      method: "POST",
+      url: "/products",
+      headers: { authorization: AUTH_HEADER },
+      payload: { ...validCreateProductBody, name: 12345 },
     });
 
     expect(response.statusCode).toBe(400);

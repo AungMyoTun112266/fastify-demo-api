@@ -4,7 +4,6 @@ import { PutCommand } from "@aws-sdk/lib-dynamodb";
 import {
   SignUpCommand,
   AdminConfirmSignUpCommand,
-  UsernameExistsException,
 } from "@aws-sdk/client-cognito-identity-provider";
 import { createTestApp } from "../helpers/app";
 import { dynamoMock, cognitoMock, resetMocks } from "../helpers/setup";
@@ -177,6 +176,104 @@ describe("POST /auth/signup", () => {
       method: "POST",
       url: "/auth/signup",
       payload: bodyWithoutAge,
+    });
+
+    expect(response.statusCode).toBe(400);
+  });
+
+  // --- Security: Input Length Limits ---
+
+  it("should return 400 when password exceeds max length", async () => {
+    const response = await app.inject({
+      method: "POST",
+      url: "/auth/signup",
+      payload: { ...validSignupBody, password: "a".repeat(129) },
+    });
+
+    expect(response.statusCode).toBe(400);
+  });
+
+  it("should return 400 when name exceeds max length", async () => {
+    const response = await app.inject({
+      method: "POST",
+      url: "/auth/signup",
+      payload: { ...validSignupBody, name: "a".repeat(101) },
+    });
+
+    expect(response.statusCode).toBe(400);
+  });
+
+  it("should return 400 when email exceeds max length", async () => {
+    const response = await app.inject({
+      method: "POST",
+      url: "/auth/signup",
+      payload: { ...validSignupBody, email: "a".repeat(250) + "@test.com" },
+    });
+
+    expect(response.statusCode).toBe(400);
+  });
+
+  // --- Security: Boundary Values ---
+
+  it("should return 400 when age is 0", async () => {
+    const response = await app.inject({
+      method: "POST",
+      url: "/auth/signup",
+      payload: { ...validSignupBody, age: 0 },
+    });
+
+    expect(response.statusCode).toBe(400);
+  });
+
+  it("should return 400 when age is negative", async () => {
+    const response = await app.inject({
+      method: "POST",
+      url: "/auth/signup",
+      payload: { ...validSignupBody, age: -1 },
+    });
+
+    expect(response.statusCode).toBe(400);
+  });
+
+  // --- Security: Whitespace Trimming ---
+
+  it("should return 400 when name is only whitespace", async () => {
+    const response = await app.inject({
+      method: "POST",
+      url: "/auth/signup",
+      payload: { ...validSignupBody, name: "   " },
+    });
+
+    expect(response.statusCode).toBe(400);
+  });
+
+  it("should return 400 when email is only whitespace", async () => {
+    const response = await app.inject({
+      method: "POST",
+      url: "/auth/signup",
+      payload: { ...validSignupBody, email: "   " },
+    });
+
+    expect(response.statusCode).toBe(400);
+  });
+
+  // --- Security: Type Coercion ---
+
+  it("should return 400 when email is a number", async () => {
+    const response = await app.inject({
+      method: "POST",
+      url: "/auth/signup",
+      payload: { ...validSignupBody, email: 12345 },
+    });
+
+    expect(response.statusCode).toBe(400);
+  });
+
+  it("should return 400 when age is a string", async () => {
+    const response = await app.inject({
+      method: "POST",
+      url: "/auth/signup",
+      payload: { ...validSignupBody, age: "twenty" },
     });
 
     expect(response.statusCode).toBe(400);

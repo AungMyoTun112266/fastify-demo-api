@@ -12,6 +12,13 @@ vi.mock("aws-jwt-verify", () => {
               token_use: "access",
             };
           }
+          if (token === "user-token") {
+            return {
+              sub: "user-456",
+              "cognito:groups": [],
+              token_use: "access",
+            };
+          }
           throw new Error("Invalid token");
         }),
       }),
