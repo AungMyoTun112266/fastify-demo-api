@@ -1,19 +1,17 @@
 import { z } from "zod";
-import { requiredString } from "../../shared/validators/string";
+import { email, password, requiredString } from "../../shared/validators/string";
 import { positiveInt } from "../../shared/validators/number";
 
 export const signupBodySchema = z.object({
-  email: requiredString("Email").email({ message: "Email must be valid" }),
-  name: requiredString("Name"),
+  email: email("Email"),
+  name: requiredString("Name", { max: 100 }),
   age: positiveInt("Age"),
-  password: requiredString("Password").min(8, {
-    message: "Password must be at least 8 characters",
-  }),
+  password: password("Password"),
 });
 
 export const signinBodySchema = z.object({
-  email: requiredString("Email").email({ message: "Email must be valid" }),
-  password: requiredString("Password"),
+  email: email("Email"),
+  password: password("Password"),
 });
 
 export const signupResponseSchema = z.object({

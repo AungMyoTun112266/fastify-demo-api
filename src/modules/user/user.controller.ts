@@ -9,6 +9,7 @@ export class UserController extends BaseController {
   }
 
   create = async (request: FastifyRequest, reply: FastifyReply) => {
+    console.log("UserController.create called");
     const { id } = request.params as UserParams;
     const { active } = request.query as UserQuery;
     const body = request.body as UserBody;

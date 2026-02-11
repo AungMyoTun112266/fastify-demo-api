@@ -1,9 +1,9 @@
 import { z } from "zod";
-import { requiredString, strictBoolean } from "../../shared/validators/string";
+import { identifier, requiredString, password, strictBoolean } from "../../shared/validators/string";
 import { positiveInt } from "../../shared/validators/number";
 
 export const userParamsSchema = z.object({
-  id: requiredString("User id"),
+  id: identifier("User id"),
 });
 
 export const userQuerySchema = z.object({
@@ -11,11 +11,9 @@ export const userQuerySchema = z.object({
 });
 
 export const userBodySchema = z.object({
-  name: requiredString("Name"),
+  name: requiredString("Name", { max: 100 }),
   age: positiveInt("Age"),
-  password: requiredString("Password").min(8, {
-    message: "Password must be at least 8 characters",
-  }),
+  password: password("Password"),
 });
 
 export const userResponseSchema = z.object({

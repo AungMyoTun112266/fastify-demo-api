@@ -1,16 +1,16 @@
 import { z } from "zod";
-import { requiredString } from "../../shared/validators/string";
+import { identifier, requiredString, longText } from "../../shared/validators/string";
 import { positiveNumber } from "../../shared/validators/number";
 
 export const productParamsSchema = z.object({
-  id: requiredString("Product id"),
+  id: identifier("Product id"),
 });
 
 export const productBodySchema = z.object({
-  name: requiredString("Name"),
+  name: requiredString("Name", { max: 200 }),
   price: positiveNumber("Price"),
-  description: requiredString("Description"),
-  category: requiredString("Category"),
+  description: longText("Description"),
+  category: requiredString("Category", { max: 100 }),
 });
 
 export const productResponseSchema = z.object({
