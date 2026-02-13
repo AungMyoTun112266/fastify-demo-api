@@ -1,8 +1,7 @@
-import { User } from "./user.types";
+import { User, UserPersistence } from "./user.types";
 import { Repository } from "../../shared/types/repository";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { PutCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
-import { ConflictError } from "../../shared/errors";
 
 export class UserRepository implements Repository<User> {
   constructor(
@@ -11,20 +10,13 @@ export class UserRepository implements Repository<User> {
   ) {}
 
   async save(entity: User): Promise<User> {
-    try {
-      await this.docClient.send(
-        new PutCommand({
-          TableName: this.tableName,
-          Item: entity,
-        })
-      );
-      return entity;
-    } catch (error: unknown) {
-      if (error instanceof Error && error.name === "ConditionalCheckFailedException") {
-        throw new ConflictError("User already exists");
-      }
-      throw error;
-    }
+    await this.docClient.send(
+      new PutCommand({
+        TableName: this.tableName,
+        Item: entity.toPersistence(),
+      })
+    );
+    return entity;
   }
 
   async findById(id: string): Promise<User | null> {
@@ -39,6 +31,7 @@ export class UserRepository implements Repository<User> {
       })
     );
 
-    return (result.Items?.[0] as User) ?? null;
+    const item = result.Items?.[0] as UserPersistence | undefined;
+    return item ? User.fromPersistence(item) : null;
   }
 }

@@ -7,6 +7,7 @@ import { authModule } from "./modules/auth/auth.module";
 import { createContainer } from "./container/container";
 import { errorHandler } from "./plugins/error-handler";
 import { authPlugin } from "./plugins/auth";
+import { zodPlugin } from "./plugins/zod";
 
 export function buildApp() {
   const app = Fastify({
@@ -14,6 +15,7 @@ export function buildApp() {
     trustProxy: true,
   }).withTypeProvider<ZodTypeProvider>();
 
+  zodPlugin(app);
   const container = createContainer();
 
   app.register(compress, {

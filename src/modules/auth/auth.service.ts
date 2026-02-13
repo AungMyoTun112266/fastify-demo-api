@@ -30,8 +30,6 @@ export class AuthService {
   ) {}
 
   async signup(input: SignupBody): Promise<{ message: string }> {
-    const hashedPassword = await hashPassword(input.password);
-
     await this.cognitoClient.send(
       new SignUpCommand({
         ClientId: this.cognitoConfig.clientId,
@@ -48,14 +46,17 @@ export class AuthService {
       })
     );
 
-    await this.userRepo.save({
-      id: input.email,
-      sk: "USER",
-      name: input.name,
-      age: input.age,
-      active: true,
-      password: hashedPassword,
-    });
+    const user = await User.create(
+      {
+        id: input.email,
+        name: input.name,
+        age: input.age,
+        active: true,
+        password: input.password,
+      },
+      hashPassword
+    );
+    await this.userRepo.save(user);
 
     return { message: "User registered successfully" };
   }
