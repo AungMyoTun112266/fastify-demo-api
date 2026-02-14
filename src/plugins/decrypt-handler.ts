@@ -1,9 +1,12 @@
 import fp from "fastify-plugin";
 import { FastifyPluginAsync } from "fastify";
 import { preventReplay } from "../infra/security/replay-protection";
-import { UnsupportedMediaTypeError } from "../shared/errors";
+import { BadRequestError, UnsupportedMediaTypeError } from "../shared/errors";
 import { decryptData } from "../shared/utils/crypto";
-import { encryptedPayloadSchema } from "../shared/validators/encrypted-payload";
+import {
+  encryptedBodySchema,
+  EncryptedPayload,
+} from "../shared/validators/encrypted-payload";
 import { validate } from "../shared/utils/validate";
 
 const methodsWithBody = ["POST", "PUT", "PATCH"];
@@ -18,9 +21,19 @@ export const decryptPlugin: FastifyPluginAsync = fp(async (fastify) => {
         "Content-Type must be application/json"
       );
     }
-    const body = validate(encryptedPayloadSchema, request.body);
-    const decrypted = decryptData(body);
-    await preventReplay(body.nonce);
+    const nonce = request.headers["x-nonce"] as string;
+
+    if (!nonce) {
+      throw new BadRequestError("Missing required headers: x-nonce");
+    }
+    const body = validate(encryptedBodySchema, request.body);
+    const payload: EncryptedPayload = {
+      ...body,
+      nonce,
+    };
+
+    await preventReplay(nonce);
+    const decrypted = decryptData(payload);
     request.body = decrypted;
   });
 });

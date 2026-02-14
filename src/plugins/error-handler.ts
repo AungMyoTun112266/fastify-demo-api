@@ -9,6 +9,19 @@ import {
 
 export async function errorHandler(app: FastifyInstance) {
   app.setErrorHandler((error, request, reply) => {
+    console.log((error as FastifyError).code);
+    if ((error as FastifyError).code === "FST_ERR_CTP_INVALID_JSON_BODY") {
+      const validationError = new ValidationError(
+        {
+          body: "Request body contains invalid JSON syntax.",
+        },
+        "Invalid JSON payload"
+      );
+      return reply.status(validationError.statusCode).send({
+        ...validationError.toProblem(),
+        instance: request.url,
+      });
+    }
     if (isFastifyValidationError(error) && error.validation) {
       const validationError = new ValidationError(
         formatValidationErrors(error)

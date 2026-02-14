@@ -1,4 +1,5 @@
 import Fastify from "fastify";
+import formbody from "@fastify/formbody";
 import compress from "@fastify/compress";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import { userModule } from "./modules/user/user.module";
@@ -15,6 +16,8 @@ export function buildApp() {
     logger: false,
     trustProxy: true,
   }).withTypeProvider<ZodTypeProvider>();
+
+  app.register(formbody);
 
   zodPlugin(app);
   const container = createContainer();

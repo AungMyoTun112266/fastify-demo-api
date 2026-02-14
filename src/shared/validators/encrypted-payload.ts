@@ -1,10 +1,14 @@
 import { z } from "zod";
 
-export const encryptedPayloadSchema = z.object({
+export const encryptedBodySchema = z.object({
   iv: z.string().min(1),
   tag: z.string().min(1),
   data: z.string().min(1),
+});
+
+export const encryptedPayloadSchema = encryptedBodySchema.extend({
   nonce: z.uuid(),
 });
 
+export type EncryptedBody = z.infer<typeof encryptedBodySchema>;
 export type EncryptedPayload = z.infer<typeof encryptedPayloadSchema>;
