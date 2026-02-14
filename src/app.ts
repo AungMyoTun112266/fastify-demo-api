@@ -1,5 +1,6 @@
 import Fastify from "fastify";
 import formbody from "@fastify/formbody";
+import helmet from "@fastify/helmet";
 import compress from "@fastify/compress";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import { userModule } from "./modules/user/user.module";
@@ -15,8 +16,9 @@ export function buildApp() {
   const app = Fastify({
     logger: false,
     trustProxy: true,
+    bodyLimit: 10 * 1024 * 1024, // 10MB
   }).withTypeProvider<ZodTypeProvider>();
-
+  app.register(helmet);
   app.register(formbody);
 
   zodPlugin(app);
