@@ -10,6 +10,7 @@ export class UserRepository implements Repository<User> {
   ) {}
 
   async save(entity: User): Promise<User> {
+    console.log("Saving user:", entity);
     await this.docClient.send(
       new PutCommand({
         TableName: this.tableName,

@@ -6,8 +6,9 @@ import { productModule } from "./modules/product/product.module";
 import { authModule } from "./modules/auth/auth.module";
 import { createContainer } from "./container/container";
 import { errorHandler } from "./plugins/error-handler";
-import { authPlugin } from "./plugins/auth";
+import { authPlugin } from "./plugins/auth-handler";
 import { zodPlugin } from "./plugins/zod";
+import { decryptPlugin } from "./plugins/decrypt-handler";
 
 export function buildApp() {
   const app = Fastify({
@@ -24,6 +25,7 @@ export function buildApp() {
     threshold: 1024, // compress responses > 1KB
   });
   errorHandler(app);
+  app.register(decryptPlugin);
   app.register(authPlugin);
   authModule(app, container);
   userModule(app, container);

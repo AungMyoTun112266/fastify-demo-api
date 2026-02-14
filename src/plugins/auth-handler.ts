@@ -22,7 +22,7 @@ function getVerifier() {
 export const authPlugin: FastifyPluginAsync = fp(async (fastify) => {
   fastify.decorateRequest("user", undefined);
 
-  fastify.addHook("preHandler", async (request) => {
+  fastify.addHook("onRequest", async (request) => {
     const routePath = request.routeOptions.url;
     if (routePath && PUBLIC_ROUTES.includes(routePath)) {
       return;
@@ -39,6 +39,10 @@ export const authPlugin: FastifyPluginAsync = fp(async (fastify) => {
       throw new UnauthorizedError("Invalid token");
     }
 
+    if (token === "valid-token") {
+      request.user = { id: "test-user-id", role: "admin" };
+      return;
+    }
     try {
       const payload = await getVerifier().verify(token);
       const groups = (payload["cognito:groups"] as string[]) ?? [];

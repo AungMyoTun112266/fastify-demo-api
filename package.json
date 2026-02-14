@@ -8,7 +8,9 @@
     "start": "node dist/server.js",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "encrypt": "ts-node src/scripts/crypto-cli.ts encrypt",
+    "decrypt": "ts-node src/scripts/crypto-cli.ts decrypt"
   },
   "keywords": [],
   "author": "",
