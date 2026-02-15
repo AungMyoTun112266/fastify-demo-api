@@ -7,44 +7,45 @@ import {
   InternalServerError,
 } from "../shared/errors";
 
-export async function errorHandler(app: FastifyInstance) {
+export async function errorPlugin(app: FastifyInstance) {
   app.setErrorHandler((error, request, reply) => {
-    console.log((error as FastifyError).code);
-    if ((error as FastifyError).code === "FST_ERR_CTP_INVALID_JSON_BODY") {
-      const validationError = new ValidationError(
-        {
-          body: "Request body contains invalid JSON syntax.",
-        },
-        "Invalid JSON payload"
-      );
-      return reply.status(validationError.statusCode).send({
-        ...validationError.toProblem(),
-        instance: request.url,
-      });
-    }
-    if (isFastifyValidationError(error) && error.validation) {
-      const validationError = new ValidationError(
-        formatValidationErrors(error)
-      );
+    const instance = request.url;
 
-      return reply.status(validationError.statusCode).send({
-        ...validationError.toProblem(),
-        instance: request.url,
-      });
+    if (isInvalidJsonError(error)) {
+      return sendProblem(
+        reply,
+        new ValidationError(
+          { body: "Request body contains invalid JSON syntax." },
+          "Invalid JSON payload"
+        ),
+        instance
+      );
+    }
+
+    if (isFastifyValidationError(error) && error.validation) {
+      return sendProblem(
+        reply,
+        new ValidationError(formatValidationErrors(error)),
+        instance
+      );
     }
 
     if (error instanceof HttpError) {
-      return reply.status(error.statusCode).send({
-        ...error.toProblem(),
-        instance: request.url,
-      });
+      return sendProblem(reply, error, instance);
     }
 
     request.log.error(error);
-    const internalError = new InternalServerError();
-    return reply.status(internalError.statusCode).send({
-      ...internalError.toProblem(),
-      instance: request.url,
-    });
+    return sendProblem(reply, new InternalServerError(), instance);
+  });
+}
+
+function isInvalidJsonError(error: unknown): boolean {
+  return (error as FastifyError)?.code === "FST_ERR_CTP_INVALID_JSON_BODY";
+}
+
+function sendProblem(reply: any, error: HttpError, instance: string) {
+  return reply.status(error.statusCode).send({
+    ...error.toProblem(),
+    instance,
   });
 }
