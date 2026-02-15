@@ -7,10 +7,10 @@ import { userModule } from "./modules/user/user.module";
 import { productModule } from "./modules/product/product.module";
 import { authModule } from "./modules/auth/auth.module";
 import { createContainer } from "./container/container";
-import { errorHandler } from "./plugins/error-handler";
-import { authPlugin } from "./plugins/auth-handler";
-import { zodPlugin } from "./plugins/zod";
-import { decryptPlugin } from "./plugins/decrypt-handler";
+import { errorHandler } from "./plugins/error-plugin";
+import { authPlugin } from "./plugins/auth-plugin";
+import { zodPlugin } from "./plugins/zod-plugin";
+import { decryptPlugin } from "./plugins/decrypt-plugin";
 
 export function buildApp() {
   const app = Fastify({
