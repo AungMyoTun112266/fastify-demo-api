@@ -7,7 +7,7 @@ import { userModule } from "./modules/user/user.module";
 import { productModule } from "./modules/product/product.module";
 import { authModule } from "./modules/auth/auth.module";
 import { createContainer } from "./container/container";
-import { errorHandler } from "./plugins/error-plugin";
+import { errorPlugin } from "./plugins/error-plugin";
 import { authPlugin } from "./plugins/auth-plugin";
 import { zodPlugin } from "./plugins/zod-plugin";
 import { decryptPlugin } from "./plugins/decrypt-plugin";
@@ -29,8 +29,8 @@ export function buildApp() {
     encodings: ["gzip", "br"], // Brotli + gzip
     threshold: 1024, // compress responses > 1KB
   });
-  errorHandler(app);
-  app.register(decryptPlugin);
+  errorPlugin(app);
+  app.register(decryptPlugin, { eventBus: container.eventBus });
   app.register(authPlugin);
   authModule(app, container);
   userModule(app, container);

@@ -3,6 +3,7 @@ import { FastifyPluginAsync } from "fastify";
 import { preventReplay } from "../infra/security/replay-protection";
 import { BadRequestError, UnsupportedMediaTypeError } from "../shared/errors";
 import { decryptData } from "../shared/utils/crypto";
+import { InMemoryEventBus } from "../shared/events/event-bus";
 import {
   encryptedBodySchema,
   EncryptedPayload,
@@ -10,11 +11,12 @@ import {
 import { validate } from "../shared/utils/validate";
 
 const methodsWithBody = ["POST", "PUT", "PATCH"];
-export const decryptPlugin: FastifyPluginAsync = fp(async (fastify) => {
-  fastify.addHook("preValidation", async (request) => {
-    if (!methodsWithBody.includes(request.method)) {
-      return;
-    }
+const decryptPluginImpl: FastifyPluginAsync<{ eventBus?: InMemoryEventBus }> =
+  async (fastify, opts) => {
+    fastify.addHook("preValidation", async (request) => {
+      if (!methodsWithBody.includes(request.method)) {
+        return;
+      }
     const contentType = request.headers["content-type"];
     if (!contentType?.includes("application/json")) {
       throw new UnsupportedMediaTypeError(
@@ -32,8 +34,13 @@ export const decryptPlugin: FastifyPluginAsync = fp(async (fastify) => {
       nonce,
     };
 
-    await preventReplay(nonce);
+    await preventReplay(nonce, opts.eventBus, {
+      ip: request.ip,
+      userAgent: request.headers["user-agent"] as string | undefined,
+    });
     const decrypted = decryptData(payload);
     request.body = decrypted;
   });
-});
+};
+
+export const decryptPlugin = fp(decryptPluginImpl);

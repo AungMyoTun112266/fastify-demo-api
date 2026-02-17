@@ -9,14 +9,23 @@ import { ProductService } from "../modules/product/product.service";
 import { ProductController } from "../modules/product/product.controller";
 import { AuthService } from "../modules/auth/auth.service";
 import { AuthController } from "../modules/auth/auth.controller";
+import { AuditService } from "../infra/logging/audit.service";
+import { InMemoryEventBus } from "../shared/events/event-bus";
+import { registerAuditHandlers } from "../infra/logging/audit.handlers";
 
 export function createContainer() {
+  const auditService = new AuditService(dynamoDocClient, env.AUDIT_TABLE);
+  const eventBus = new InMemoryEventBus();
+  registerAuditHandlers(eventBus, auditService);
   // repositories
   const userRepository = new UserRepository(dynamoDocClient, env.USERS_TABLE);
-  const productRepository = new ProductRepository(dynamoDocClient, env.PRODUCTS_TABLE);
+  const productRepository = new ProductRepository(
+    dynamoDocClient,
+    env.PRODUCTS_TABLE
+  );
 
   // services
-  const userService = new UserService(userRepository);
+  const userService = new UserService(userRepository, eventBus);
   const productService = new ProductService(productRepository);
   const authService = new AuthService(userRepository, cognitoClient, {
     userPoolId: env.COGNITO_USER_POOL_ID,
@@ -32,6 +41,7 @@ export function createContainer() {
     userController,
     productController,
     authController,
+    eventBus,
   };
 }
 

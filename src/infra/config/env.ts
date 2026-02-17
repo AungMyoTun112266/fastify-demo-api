@@ -27,6 +27,7 @@ const envSchema = z.object({
       "HMAC_SECRET_KEY must decode to at least 32 bytes"
     ),
   DYNAMO_HMAC_TABLE: z.string().min(1, "DYNAMO_HMAC_TABLE is required"),
+  AUDIT_TABLE: z.string().min(1, "AUDIT_TABLE is required"),
 });
 
 export const env = envSchema.parse(process.env);
