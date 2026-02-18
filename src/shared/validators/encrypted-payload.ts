@@ -8,6 +8,7 @@ export const encryptedBodySchema = z.object({
 
 export const encryptedPayloadSchema = encryptedBodySchema.extend({
   nonce: z.uuid(),
+  signature: z.string().optional(),
 });
 
 export type EncryptedBody = z.infer<typeof encryptedBodySchema>;

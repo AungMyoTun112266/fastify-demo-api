@@ -1,9 +1,5 @@
 import readline from "readline";
-import {
-  encryptData,
-  decryptData,
-  generateSignature,
-} from "../shared/utils/crypto";
+import { encryptData, decryptData } from "../shared/utils/crypto";
 
 const rl = readline.createInterface({
   input: process.stdin,

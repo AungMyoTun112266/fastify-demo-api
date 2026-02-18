@@ -11,12 +11,13 @@ import {
 import { validate } from "../shared/utils/validate";
 
 const methodsWithBody = ["POST", "PUT", "PATCH"];
-const decryptPluginImpl: FastifyPluginAsync<{ eventBus?: InMemoryEventBus }> =
-  async (fastify, opts) => {
-    fastify.addHook("preValidation", async (request) => {
-      if (!methodsWithBody.includes(request.method)) {
-        return;
-      }
+const decryptPluginImpl: FastifyPluginAsync<{
+  eventBus?: InMemoryEventBus;
+}> = async (fastify, opts) => {
+  fastify.addHook("preValidation", async (request) => {
+    if (!methodsWithBody.includes(request.method)) {
+      return;
+    }
     const contentType = request.headers["content-type"];
     if (!contentType?.includes("application/json")) {
       throw new UnsupportedMediaTypeError(
@@ -24,14 +25,23 @@ const decryptPluginImpl: FastifyPluginAsync<{ eventBus?: InMemoryEventBus }> =
       );
     }
     const nonce = request.headers["x-nonce"] as string;
+    const signature = request.headers["x-signature"] as string;
 
-    if (!nonce) {
-      throw new BadRequestError("Missing required headers: x-nonce");
+    if (
+      !nonce ||
+      typeof nonce !== "string" ||
+      !signature ||
+      typeof signature !== "string"
+    ) {
+      throw new BadRequestError(
+        "Missing required headers: x-nonce and x-signature"
+      );
     }
     const body = validate(encryptedBodySchema, request.body);
     const payload: EncryptedPayload = {
       ...body,
       nonce,
+      signature,
     };
 
     await preventReplay(nonce, opts.eventBus, {
