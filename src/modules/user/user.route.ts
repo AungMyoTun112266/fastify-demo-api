@@ -1,37 +1,36 @@
 import { AppInstance } from "../../app";
 import { AppContainer } from "../../container/container";
 import {
+  userBodySchema,
   userParamsSchema,
   userQuerySchema,
-  userBodySchema,
   userResponseSchema,
 } from "./user.schema";
 
 export async function userRoutes(app: AppInstance, container: AppContainer) {
-  app.post(
-    "/:id",
-    {
+  const { userController } = container;
+
+  app.register(async (user) => {
+    user.route({
+      method: "POST",
+      url: "/:id",
       schema: {
         params: userParamsSchema,
         querystring: userQuerySchema,
         body: userBodySchema,
-        response: {
-          201: userResponseSchema,
-        },
+        response: { 201: userResponseSchema },
       },
-    },
-    container.userController.create
-  );
-  app.get(
-    "/:id",
-    {
+      handler: userController.create.bind(userController),
+    });
+
+    user.route({
+      method: "GET",
+      url: "/:id",
       schema: {
         params: userParamsSchema,
-        response: {
-          200: userResponseSchema,
-        },
+        response: { 200: userResponseSchema },
       },
-    },
-    container.userController.findById
-  );
+      handler: userController.findById.bind(userController),
+    });
+  });
 }
