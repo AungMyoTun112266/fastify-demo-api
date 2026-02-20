@@ -1,9 +1,13 @@
+import { NodeHttpHandler } from "@aws-sdk/node-http-handler";
+import { Agent } from "http";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { env } from "../config/env";
 
-const client = new DynamoDBClient({
-  region: env.AWS_REGION,
-});
+const agent = new Agent({ keepAlive: true });
 
-export const dynamoDocClient = DynamoDBDocumentClient.from(client);
+export const dynamoDocClient = new DynamoDBClient({
+  region: env.AWS_REGION,
+  requestHandler: new NodeHttpHandler({
+    httpAgent: agent,
+  }),
+});
